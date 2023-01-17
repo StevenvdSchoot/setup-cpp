@@ -124,11 +124,30 @@ export async function main(args: string[]): Promise<number> {
 
   const osVersion = await ubuntuVersion()
 
+  const printTools = (count) => {
+    const msg = ` *** Tools to install (${count}): ${tools
+      .filter((tool) => opts[tool] !== undefined)
+      .map((tool) => tool + " (" + opts[tool] + ")")
+      .join(", ")}`
+    warning(msg)
+    console.log(msg)
+  }
+
+  printTools(1)
+
+  const p = () => {
+    info(` *** llvm: ${opts["llvm"]}`)
+    info(` *** clangtidy: ${opts["clangtidy"]}`)
+    info(` *** clangformat: ${opts["clangformat"]}`)
+  }
+
   // sync the version for the llvm tools
+  p()
   if (!syncVersions(opts, ["llvm", "clangtidy", "clangformat"])) {
     error("The same version must be used for llvm, clangformat and clangtidy")
     return 1
   }
+  p()
 
   let hasLLVM = false // used to unset CPPFLAGS of LLVM when other compilers are used as the main compiler
 
@@ -136,6 +155,8 @@ export async function main(args: string[]): Promise<number> {
     info("installing python-pygments to avoid conflicts with cppcheck and gcovr on Arch linux")
     setupPacmanPack("python-pygments")
   }
+
+  printTools(2)
 
   // loop over the tools and run their setup function
   for (const tool of tools) {
@@ -184,6 +205,9 @@ export async function main(args: string[]): Promise<number> {
       info(`took ${timeFormatter.format(time1, time2) || "0 seconds"}`)
     }
   }
+
+  printTools(3)
+  p()
 
   // installing the specified compiler
   const maybeCompiler = opts.compiler
